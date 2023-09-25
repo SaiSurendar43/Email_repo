@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import './App.css'
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 
@@ -23,17 +24,36 @@ const Loginform = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-     
-         if(email === 'sai' && password === '123'){
-               
-               navigate('/email')
-         }
-         else
-         {
-              alert('login failed')
-         }
+       
+     const data =
+     {
+        UserName : email,
+        Password : password
 
   };
+
+    axios.post('http://localhost:8000/api/user',data)
+      .then((response)=>{
+          console.log('res',response.data);
+
+          const {message} = response.data;
+           
+          console.log('msg',message)
+
+          if (message === 'Login successful')
+          {
+              navigate('/email');
+              alert('Login Successfully')
+          }
+          else
+          {
+             alert('Login Failed')
+          }
+
+
+      })
+
+    }
 
   return (
     <Container maxWidth="xs">

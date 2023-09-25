@@ -1,15 +1,77 @@
 const express = require('express');
 const multer = require('multer');
+const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const mysql = require('mysql');
 const app = express();
-const port = 4000;
+const port = 8000;
+
+
 
 const storage = multer.memoryStorage(); // Store the file in memory
 const upload = multer({ storage });
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 
 app.use(express.json());
 app.use(cors());  
+
+const connection = mysql.createConnection({
+    
+    host: 'localhost',
+    user:  'root',
+    password: '',
+    database: 'emailuser'
+})
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Error connecting to MySQL database:', err);
+    return;
+  }
+  console.log('Connected to MySQL database');
+});
+
+
+app.post('/api/user',(req,res)=>{
+
+    const{ UserName,Password} = req.body;
+
+  try{
+     
+      const sql = `SELECT * FROM userlist WHERE username = ? AND password = ?`;
+
+      connection.query( sql, [UserName,Password],(err,results)=>{
+         
+        if (err) {
+          console.error('Error executing SQL query:', err);
+          res.status(500).json({ success: false, message: 'Internal server error' });
+          return;
+        }
+
+        if (results.length === 1) {
+          res.json({ success: true, message: 'Login successful' });
+        } else {
+          res.json({ success: false, message: 'Login failed' });
+        }
+           
+      })
+  }
+
+  catch (error) {
+    console.error(error);
+    res.status(500).send('Error sending user');
+  }
+
+})
+
+
+
+
+
+
 
 // Store attachment data in memory
 const attachments = [];
